@@ -1513,7 +1513,7 @@ cc_defaults {
   target: {
     android: {
       lto: {
-        thin: false,
+        thin: true,
       },
     },
   },
