@@ -30,14 +30,17 @@
 #include <unwindstack/RegsArm64.h>
 #include <unwindstack/RegsX86.h>
 #include <unwindstack/RegsX86_64.h>
+#include <unwindstack/RegsRiscv64.h>
 #include <unwindstack/UserArm.h>
 #include <unwindstack/UserArm64.h>
 #include <unwindstack/UserX86.h>
 #include <unwindstack/UserX86_64.h>
+#include <unwindstack/UserRiscv64.h>
 
 // kernel uapi headers
 #include <uapi/asm-arm/asm/perf_regs.h>
 #include <uapi/asm-x86/asm/perf_regs.h>
+#include <uapi/asm-riscv/asm/perf_regs.h>
 #define perf_event_arm_regs perf_event_arm64_regs
 #include <uapi/asm-arm64/asm/perf_regs.h>
 #undef perf_event_arm_regs
@@ -72,6 +75,8 @@ uint64_t PerfUserRegsMask(unwindstack::ArchEnum arch) {
       return (1ULL << PERF_REG_ARM64_MAX) - 1;
     case unwindstack::ARCH_ARM:
       return ((1ULL << PERF_REG_ARM_MAX) - 1);
+    case unwindstack::ARCH_RISCV64:
+      return (1ULL << PERF_REG_RISCV_MAX) - 1;
     // perf on x86_64 doesn't allow sampling ds/es/fs/gs registers. See
     // arch/x86/kernel/perf_regs.c in the kernel.
     case unwindstack::ARCH_X86_64:
@@ -196,6 +201,45 @@ std::unique_ptr<unwindstack::Regs> ToLibUnwindstackRegs(
     return std::unique_ptr<unwindstack::Regs>(
         unwindstack::RegsX86::Read(&x86_user_regs));
   }
+
+  if (arch == unwindstack::ARCH_RISCV64) {
+      unwindstack::riscv64_user_regs riscv64_user_regs;
+      memset(&riscv64_user_regs, 0, sizeof(riscv64_user_regs));
+      riscv64_user_regs.regs[PERF_REG_RISCV_PC] = raw_regs.regs[PERF_REG_RISCV_PC];
+      riscv64_user_regs.regs[PERF_REG_RISCV_RA] = raw_regs.regs[PERF_REG_RISCV_RA];
+      riscv64_user_regs.regs[PERF_REG_RISCV_SP] = raw_regs.regs[PERF_REG_RISCV_SP];
+      riscv64_user_regs.regs[PERF_REG_RISCV_GP] = raw_regs.regs[PERF_REG_RISCV_GP];
+      riscv64_user_regs.regs[PERF_REG_RISCV_TP] = raw_regs.regs[PERF_REG_RISCV_TP];
+      riscv64_user_regs.regs[PERF_REG_RISCV_T0] = raw_regs.regs[PERF_REG_RISCV_T0];
+      riscv64_user_regs.regs[PERF_REG_RISCV_T1] = raw_regs.regs[PERF_REG_RISCV_T1];
+      riscv64_user_regs.regs[PERF_REG_RISCV_T2] = raw_regs.regs[PERF_REG_RISCV_T2];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S0] = raw_regs.regs[PERF_REG_RISCV_S0];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S1] = raw_regs.regs[PERF_REG_RISCV_S1];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A0] = raw_regs.regs[PERF_REG_RISCV_A0];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A1] = raw_regs.regs[PERF_REG_RISCV_A1];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A2] = raw_regs.regs[PERF_REG_RISCV_A2];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A3] = raw_regs.regs[PERF_REG_RISCV_A3];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A4] = raw_regs.regs[PERF_REG_RISCV_A4];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A5] = raw_regs.regs[PERF_REG_RISCV_A5];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A6] = raw_regs.regs[PERF_REG_RISCV_A6];
+      riscv64_user_regs.regs[PERF_REG_RISCV_A7] = raw_regs.regs[PERF_REG_RISCV_A7];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S2] = raw_regs.regs[PERF_REG_RISCV_S2];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S3] = raw_regs.regs[PERF_REG_RISCV_S3];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S4] = raw_regs.regs[PERF_REG_RISCV_S4];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S5] = raw_regs.regs[PERF_REG_RISCV_S5];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S6] = raw_regs.regs[PERF_REG_RISCV_S6];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S7] = raw_regs.regs[PERF_REG_RISCV_S7];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S8] = raw_regs.regs[PERF_REG_RISCV_S8];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S9] = raw_regs.regs[PERF_REG_RISCV_S9];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S10] = raw_regs.regs[PERF_REG_RISCV_S10];
+      riscv64_user_regs.regs[PERF_REG_RISCV_S11] = raw_regs.regs[PERF_REG_RISCV_S11];
+      riscv64_user_regs.regs[PERF_REG_RISCV_T3] = raw_regs.regs[PERF_REG_RISCV_T3];
+      riscv64_user_regs.regs[PERF_REG_RISCV_T4] = raw_regs.regs[PERF_REG_RISCV_T4];
+      riscv64_user_regs.regs[PERF_REG_RISCV_T5] = raw_regs.regs[PERF_REG_RISCV_T5];
+      riscv64_user_regs.regs[PERF_REG_RISCV_T6] = raw_regs.regs[PERF_REG_RISCV_T6];
+      return std::unique_ptr<unwindstack::Regs>(
+        unwindstack::RegsRiscv64::Read(&riscv64_user_regs));
+    }
 
   PERFETTO_FATAL("Unsupported architecture");
 }
